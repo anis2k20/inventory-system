@@ -3,12 +3,7 @@
         <div class="mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Products</h1>
-                <Link href="/products/create" class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-                    Add New Product
-                </Link>
-            </div>
 
-            <div class="mb-6">
                 <Input v-model="search" @input="debouncedSearch" placeholder="Search products..." class="max-w-sm" />
             </div>
 

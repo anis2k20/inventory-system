@@ -8,22 +8,14 @@ use Intervention\Image\ImageManager;
 
 class ProductImageService
 {
-    /**
-     * Create a new class instance.
-     */
     public function __construct()
     {
-        //
     }
 
-    /**
-     * Store the uploaded image file and create a thumbnail.
-     */
     public function storeImage(UploadedFile $file): array
     {
         $originalPath = $file->store('products', 'public');
 
-        // Create thumbnail
         $thumbnailPath = 'products/thumbnails/' . basename($originalPath);
         $image = ImageManager::gd()->read($file);
         $image->resize(300, null, function ($constraint) {
@@ -37,9 +29,6 @@ class ProductImageService
         ];
     }
 
-    /**
-     * Delete the image file and thumbnail from storage.
-     */
     public function deleteImage(array $paths): bool
     {
         $deleted = true;

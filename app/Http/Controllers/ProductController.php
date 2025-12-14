@@ -87,4 +87,49 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
     }
+
+    public function archived(Request $request)
+    {
+        $query = Product::onlyTrashed();
+
+        if ($request->has('search') && $request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('sku', 'like', '%' . $request->search . '%');
+        }
+
+        $products = $query->paginate(10);
+
+        return Inertia::render('Products/Archived', [
+            'products' => $products,
+            'filters' => $request->only(['search']),
+        ]);
+    }
+
+    public function restore($id)
+    {
+        $product = Product::withTrashed()->findOrFail($id);
+        $product->restore();
+
+        return redirect()->route('products.archived')->with('success', 'Product restored successfully.');
+    }
+
+    public function forceDelete($id)
+    {
+        $product = Product::withTrashed()->findOrFail($id);
+
+        if ($product->image) {
+            $this->imageService->deleteImage($product->image);
+        }
+
+        $product->forceDelete();
+
+        return redirect()->route('products.archived')->with('success', 'Product permanently deleted.');
+    }
+
+    public function show(Product $product)
+    {
+        return Inertia::render('Products/Show', [
+            'product' => $product,
+        ]);
+    }
 }
