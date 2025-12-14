@@ -7,29 +7,57 @@
                 <Input v-model="search" @input="debouncedSearch" placeholder="Search products..." class="max-w-sm" />
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
-                <Card v-for="product in products.data" :key="product.id" class="transition-shadow hover:shadow-lg"
-                    ><CardHeader>
-                        <div v-if="product.thumbnail_url" class="mb-4 w-full">
-                            <img :src="product.thumbnail_url" alt="Product image" class="h-40 w-full rounded-md border object-cover" />
-                        </div>
-                        <CardTitle>{{ product.name }}</CardTitle>
-                        <CardDescription>SKU: {{ product.sku }}</CardDescription>
-                    </CardHeader>
-                    <CardContent class="space-y-1">
-                        <p class="text-lg font-semibold text-green-600">{{ product.price }} Tk</p>
-                        <p class="text-sm">Stock: {{ product.stock_quantity }}</p>
-                    </CardContent>
-                    <CardFooter class="flex gap-2">
-                        <Link
-                            :href="`/products/${product.id}/edit`"
-                            class="inline-flex items-center rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
-                        >
-                            Edit
-                        </Link>
-                        <Button @click="openDialog(product.id)" variant="destructive" size="sm"> Delete </Button>
-                    </CardFooter>
-                </Card>
+            <div class="mb-4 overflow-hidden rounded-lg border">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead class="w-[100px]">Image</TableHead>
+                            <TableHead class="w-[200px]">Name</TableHead>
+                            <TableHead class="w-[120px]">SKU</TableHead>
+                            <TableHead class="w-[100px]">Price</TableHead>
+                            <TableHead class="w-[100px]">Stock</TableHead>
+                            <TableHead class="w-[200px]">Description</TableHead>
+                            <TableHead class="w-[150px] text-center">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow v-for="product in products.data" :key="product.id">
+                            <TableCell>
+                                <div v-if="product.thumbnail_url" class="h-20 w-20">
+                                    <img :src="product.thumbnail_url" alt="Product image" class="h-full w-full rounded-md object-cover" />
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <div class="font-medium">{{ product.name }}</div>
+                            </TableCell>
+                            <TableCell>
+                                <div class="text-sm text-gray-500">{{ product.sku }}</div>
+                            </TableCell>
+                            <TableCell>
+                                <div class="text-lg font-semibold text-green-600">{{ product.price }} Tk</div>
+                            </TableCell>
+                            <TableCell>
+                                <div class="text-sm">Stock: {{ product.stock_quantity }}</div>
+                            </TableCell>
+                            <TableCell>
+                                <div class="text-sm text-gray-700">
+                                    {{ product.description ? product.description : 'N/A' }}
+                                </div>
+                            </TableCell>
+                            <TableCell class="text-center">
+                                <div class="flex justify-center gap-2">
+                                    <Link
+                                        :href="`/products/${product.id}/edit`"
+                                        class="inline-flex items-center rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
+                                    >
+                                        Edit
+                                    </Link>
+                                    <Button @click="openDialog(product.id)" variant="destructive" size="sm"> Delete </Button>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
             </div>
 
             <div class="mt-10 flex justify-center">
@@ -56,9 +84,7 @@
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Confirm Deletion</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete this product? This action cannot be undone.
-                        </DialogDescription>
+                        <DialogDescription> Are you sure you want to delete this product? This action cannot be undone. </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
                         <Button variant="outline" @click="closeDialog">Cancel</Button>
@@ -72,11 +98,11 @@
 
 <script setup lang="ts">
 import AppLayout from '@/components/AppLayout.vue';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Link, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
