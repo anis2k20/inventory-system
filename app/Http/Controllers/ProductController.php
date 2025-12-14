@@ -39,6 +39,10 @@ class ProductController extends Controller
     {
         $validated = $request->validated();
 
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        }
+
         $product = Product::create($validated);
 
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
@@ -55,6 +59,10 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product)
     {
         $validated = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        }
 
         $product->update($validated);
 
