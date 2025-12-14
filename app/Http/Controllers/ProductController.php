@@ -7,9 +7,14 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Services\ProductImageService;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        private ProductImageService $imageService
+    ) {}
+
     public function index(Request $request)
     {
         $query = Product::query();
@@ -40,7 +45,7 @@ class ProductController extends Controller
         $validated = $request->validated();
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = $this->imageService->storeImage($request->file('image'));
         }
 
         $product = Product::create($validated);
@@ -61,7 +66,10 @@ class ProductController extends Controller
         $validated = $request->validated();
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            if ($product->image) {
+                $this->imageService->deleteImage($product->image);
+            }
+            $validated['image'] = $this->imageService->storeImage($request->file('image'));
         }
 
         $product->update($validated);
@@ -71,6 +79,10 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if ($product->image) {
+            $this->imageService->deleteImage($product->image);
+        }
+
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');

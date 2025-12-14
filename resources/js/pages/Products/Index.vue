@@ -12,18 +12,17 @@
                 <Input v-model="search" @input="debouncedSearch" placeholder="Search products..." class="max-w-sm" />
             </div>
 
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
                 <Card v-for="product in products.data" :key="product.id" class="transition-shadow hover:shadow-lg"
                     ><CardHeader>
-                        <div v-if="product.image_url" class="mb-4 w-full">
-                            <img :src="product.image_url" alt="Product image" class="h-32 max-w-full rounded-md object-cover" />
+                        <div v-if="product.thumbnail_url" class="mb-4 w-full">
+                            <img :src="product.thumbnail_url" alt="Product image" class="h-40 w-full rounded-md border object-cover" />
                         </div>
                         <CardTitle>{{ product.name }}</CardTitle>
                         <CardDescription>SKU: {{ product.sku }}</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <p class="mb-2 text-sm text-gray-600">{{ product.description }}</p>
-                        <p class="text-lg font-semibold text-green-600">${{ product.price }}</p>
+                    <CardContent class="space-y-1">
+                        <p class="text-lg font-semibold text-green-600">{{ product.price }} Tk</p>
                         <p class="text-sm">Stock: {{ product.stock_quantity }}</p>
                     </CardContent>
                     <CardFooter class="flex gap-2">
@@ -33,7 +32,7 @@
                         >
                             Edit
                         </Link>
-                        <Button @click="deleteProduct(product.id)" variant="destructive" size="sm"> Delete </Button>
+                        <Button @click="openDialog(product.id)" variant="destructive" size="sm"> Delete </Button>
                     </CardFooter>
                 </Card>
             </div>
@@ -57,16 +56,32 @@
                     </PaginationContent>
                 </Pagination>
             </div>
+
+            <Dialog v-model:open="dialogOpen">
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirm Deletion</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete this product? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" @click="closeDialog">Cancel</Button>
+                        <Button variant="destructive" @click="confirmDelete">Delete</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     </AppLayout>
 </template>
 
 <script setup lang="ts">
 import AppLayout from '@/components/AppLayout.vue';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Link, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
@@ -83,6 +98,8 @@ const props = defineProps({
 
 const search = ref(props.filters.search || '');
 const currentPage = ref(props.products.current_page);
+const dialogOpen = ref(false);
+const productIdToDelete = ref<number | null>(null);
 
 const debouncedSearch = (() => {
     let timeout: ReturnType<typeof setTimeout>;
@@ -99,9 +116,23 @@ const goToPage = (page: number) => {
     router.get('/products', { page, search: search.value }, { preserveState: true });
 };
 
-const deleteProduct = (id: number) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-        router.delete(`/products/${id}`);
+const openDialog = (id: number) => {
+    productIdToDelete.value = id;
+    dialogOpen.value = true;
+};
+
+const closeDialog = () => {
+    dialogOpen.value = false;
+    productIdToDelete.value = null;
+};
+
+const confirmDelete = () => {
+    if (productIdToDelete.value !== null) {
+        router.delete(`/products/${productIdToDelete.value}`, {
+            onSuccess: () => {
+                closeDialog();
+            },
+        });
     }
 };
 

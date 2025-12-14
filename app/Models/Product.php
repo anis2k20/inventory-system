@@ -21,12 +21,18 @@ class Product extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'stock_quantity' => 'integer',
+        'image' => 'array',
     ];
 
-    protected $appends = ['image_url'];
+    protected $appends = ['image_url', 'thumbnail_url'];
 
     public function getImageUrlAttribute()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        return $this->image && isset($this->image['original']) ? asset('storage/' . $this->image['original']) : null;
+    }
+
+    public function getThumbnailUrlAttribute()
+    {
+        return $this->image && isset($this->image['thumbnail']) ? asset('storage/' . $this->image['thumbnail']) : null;
     }
 }
